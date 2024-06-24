@@ -15,35 +15,52 @@ headers = {
     'Content-Type': 'application/json',
     'Authorization': f'Basic {getAPIKey()}'
 }
- 
-# URL to fetch all tickets
-url = f'https://{FRESH_SERVICE_DOMAIN}.freshservice.com/api/v2/tickets'
- 
-# Fetch tickets
-response = requests.get(url, headers=headers)
 
-tickets = response.json()['tickets']
- 
-# Initialize counters for ticket statuses
-status_counts = {
-    'Open': 0,
-    'Pending': 0,
-    'Resolved': 0,
-    'Closed': 0
-}
- 
-# Count tickets based on their status
+# Define the date filter for tickets updated since 2022-08-01
+date_filter = '2022-08-01'
+
+# URL to fetch all tickets updated since 2022-08-01
+url = f'https://{FRESH_SERVICE_DOMAIN}.freshservice.com/api/v2/tickets?updated_since={date_filter}'
+
+# Function to fetch all tickets with pagination
+def fetch_all_tickets(url, headers):
+    tickets = []
+    while url:
+        response = requests.get(url, headers=headers)
+        response_data = response.json()
+        if 'tickets' in response_data:
+            tickets.extend(response_data['tickets'])
+        url = response_data.get('next_page')  # Fetch next page URL
+    return tickets
+
+# Fetch all tickets updated since 2022-08-01
+tickets = fetch_all_tickets(url, headers)
+
+# Initialize counters for ticket statuses by requester_id
+requester_ticket_counts = {}
+
+# Count tickets based on their status for each requester
 for ticket in tickets:
     status = ticket['status']
+    requester_id = ticket.get('requester_id', 'Unknown Requester')
+    
+    if requester_id not in requester_ticket_counts:
+        requester_ticket_counts[requester_id] = {
+            'Open': 0,
+            'Pending': 0,
+            'Resolved': 0,
+            'Closed': 0
+        }
+    
     if status == 2:
-        status_counts['Open'] += 1
+        requester_ticket_counts[requester_id]['Open'] += 1
     elif status == 3:
-        status_counts['Pending'] += 1
+        requester_ticket_counts[requester_id]['Pending'] += 1
     elif status == 4:
-        status_counts['Resolved'] += 1
+        requester_ticket_counts[requester_id]['Resolved'] += 1
     elif status == 5:
-        status_counts['Closed'] += 1
- 
+        requester_ticket_counts[requester_id]['Closed'] += 1
+
 # HTML template using Jinja2
 html_template = """
 <!DOCTYPE html>
@@ -52,13 +69,15 @@ html_template = """
 <title>FreshService Ticket Status Report</title>
 <style>
         body { font-family: Arial, sans-serif; }
-        table { width: 50%; margin: 0 auto; border-collapse: collapse; }
+        table { width: 50%; margin: 20px auto; border-collapse: collapse; }
         th, td { padding: 10px; text-align: center; border: 1px solid #ddd; }
         th { background-color: #f4f4f4; }
 </style>
 </head>
 <body>
 <h1 style="text-align: center;">FreshService Ticket Status Report</h1>
+{% for requester_id, counts in requester_ticket_counts.items() %}
+<h2 style="text-align: center;">Requester ID: {{ requester_id }}</h2>
 <table>
 <tr>
 <th>Status</th>
@@ -66,36 +85,32 @@ html_template = """
 </tr>
 <tr>
 <td>Open</td>
-<td>{{ open }}</td>
+<td>{{ counts['Open'] }}</td>
 </tr>
 <tr>
 <td>Pending</td>
-<td>{{ pending }}</td>
+<td>{{ counts['Pending'] }}</td>
 </tr>
 <tr>
 <td>Resolved</td>
-<td>{{ resolved }}</td>
+<td>{{ counts['Resolved'] }}</td>
 </tr>
 <tr>
 <td>Closed</td>
-<td>{{ closed }}</td>
+<td>{{ counts['Closed'] }}</td>
 </tr>
 </table>
+{% endfor %}
 </body>
 </html>
 """
- 
+
 # Render the HTML content
 template = Template(html_template)
-html_content = template.render(
-    open=status_counts['Open'],
-    pending=status_counts['Pending'],
-    resolved=status_counts['Resolved'],
-    closed=status_counts['Closed']
-)
- 
+html_content = template.render(requester_ticket_counts=requester_ticket_counts)
+
 # Save the HTML content to a file
 with open('docs/kiosk1.html', 'w') as file:
     file.write(html_content)
- 
+
 print("HTML report generated successfully.")
