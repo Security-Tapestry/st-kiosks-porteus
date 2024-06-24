@@ -95,7 +95,7 @@ html_content = template.render(
 )
  
 # Save the HTML content to a file
-with open('docs/index.html', 'w') as file:
+with open('docs/kiosk1.html', 'w') as file:
     file.write(html_content)
  
 print("HTML report generated successfully.")

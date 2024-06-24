@@ -1,9 +1,10 @@
 connection=wired
 dhcp=yes
-network_interface=eth0
 browser=firefox
-homepage=https://security-tapestry.github.io/st-kiosks-porteus/
-session_idle=5
+homepage=https://security-tapestry.github.io/st-kiosks-porteus/kiosk1.html
+hostname=st-kiosk-1
 disable_navigation_bar=yes
 disable_private_mode=yes
-root_password=nunya
+refresh_webpage=180
+timezone=US/Central
+additional_components=uefi.zip 
