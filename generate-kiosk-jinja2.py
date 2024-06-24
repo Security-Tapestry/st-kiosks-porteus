@@ -16,8 +16,8 @@ headers = {
     'Authorization': f'Basic {getAPIKey()}'
 }
 
-# Define the date filter for tickets updated since 2022-08-01
-date_filter = '2022-08-01'
+# Define the date filter for tickets updated since 2022
+date_filter = '2022-01-01'
 
 # URL to fetch all tickets updated since 2022-08-01
 url = f'https://{FRESH_SERVICE_DOMAIN}.freshservice.com/api/v2/tickets?updated_since={date_filter}'
@@ -33,7 +33,7 @@ def fetch_all_tickets(url, headers):
         url = response_data.get('next_page')  # Fetch next page URL
     return tickets
 
-# Fetch all tickets updated since 2022-08-01
+# Fetch all tickets updated since 2022
 tickets = fetch_all_tickets(url, headers)
 
 # Initialize counters for ticket statuses by requester_id
