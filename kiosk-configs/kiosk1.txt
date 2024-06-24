@@ -1,0 +1,9 @@
+connection=wired
+dhcp=yes
+network_interface=eth0
+browser=firefox
+homepage=https://example.com/test.html
+session_idle=5
+disable_navigation_bar=yes
+disable_private_mode=yes
+root_password=nunya
