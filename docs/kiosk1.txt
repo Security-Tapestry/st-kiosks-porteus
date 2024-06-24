@@ -8,3 +8,4 @@ disable_private_mode=yes
 refresh_webpage=180
 timezone=US/Central
 additional_components=uefi.zip 
+kiosk_config=https://security-tapestry.github.io/st-kiosks-porteus/kiosk1.txt
